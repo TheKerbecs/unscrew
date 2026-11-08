@@ -4,9 +4,12 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 APP="build/Unscrew.app"
-echo "==> swift build -c release"
-swift build -c release
-BIN_DIR="$(swift build -c release --show-bin-path)"
+# Releases (CI) are universal; local builds only for this Mac.
+ARGS=(-c release)
+[ -n "${CI:-}" ] && ARGS+=(--arch arm64 --arch x86_64)
+echo "==> swift build ${ARGS[*]}"
+swift build "${ARGS[@]}"
+BIN_DIR="$(swift build "${ARGS[@]}" --show-bin-path)"
 
 echo "==> assembling $APP"
 rm -rf "$APP"
