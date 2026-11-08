@@ -3,7 +3,7 @@
 # description: Mouse wheel scrolls the opposite way of the trackpad. Needs Accessibility permission.
 # on: launch, wake
 # Usage: mouse-scroll-invert.sh apply|off
-helper="$HOME/Applications/Unscrew.app/Contents/MacOS/scroll-invert"
+helper="${UNSCREW_APP:-/Applications/Unscrew.app}/Contents/MacOS/scroll-invert"
 
 if [[ $1 == off ]]; then
   pkill -f "$helper"

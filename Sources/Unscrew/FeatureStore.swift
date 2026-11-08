@@ -39,7 +39,19 @@ final class FeatureStore: ObservableObject {
     init(folderURL: URL = FeatureStore.featuresFolder, defaults: UserDefaults = .standard) {
         self.folderURL = folderURL
         self.defaults = defaults
+        installBundledFeatures()
         reload()
+    }
+
+    /// Copies the scripts shipped in the app into the features folder, never overwriting.
+    private func installBundledFeatures() {
+        let fm = FileManager.default
+        guard let bundled = Bundle.main.resourceURL?.appendingPathComponent("features"),
+              let names = try? fm.contentsOfDirectory(atPath: bundled.path) else { return }
+        try? fm.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        for name in names where !fm.fileExists(atPath: folderURL.appendingPathComponent(name).path) {
+            try? fm.copyItem(at: bundled.appendingPathComponent(name), to: folderURL.appendingPathComponent(name))
+        }
     }
 
     deinit {
@@ -162,9 +174,10 @@ final class FeatureStore: ObservableObject {
         )
     }
 
-    /// Parent environment plus `UNSCREW_<KEY>` per setting.
+    /// Parent environment, `UNSCREW_APP` (the app bundle) and `UNSCREW_<KEY>` per setting.
     private func environment(for feature: Feature) -> [String: String] {
         var env = ProcessInfo.processInfo.environment
+        env["UNSCREW_APP"] = Bundle.main.bundlePath
         for setting in feature.settings {
             env["UNSCREW_" + setting.key.uppercased()] = value(feature, setting)
         }

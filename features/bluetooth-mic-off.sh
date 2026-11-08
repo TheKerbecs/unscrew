@@ -3,7 +3,7 @@
 # description: Bluetooth headsets keep high quality sound: their mic is never the input, the built-in mic is used instead.
 # on: launch, wake
 # Usage: bluetooth-mic-off.sh apply|off
-helper="$HOME/Applications/Unscrew.app/Contents/MacOS/mic-guard"
+helper="${UNSCREW_APP:-/Applications/Unscrew.app}/Contents/MacOS/mic-guard"
 
 if [[ $1 == off ]]; then
   pkill -f "$helper"

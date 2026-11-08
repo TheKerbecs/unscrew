@@ -16,6 +16,9 @@ for bin in Unscrew scroll-invert mic-guard; do
 	cp "$BIN_DIR/$bin" "$APP/Contents/MacOS/$bin"
 done
 
+mkdir -p "$APP/Contents/Resources/features"
+cp features/*.sh "$APP/Contents/Resources/features/"
+
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -79,21 +82,11 @@ echo "==> codesign ($SIGN)"
 codesign --force --deep --sign "$SIGN" "$APP"
 codesign --verify --verbose=1 "$APP" 2>&1 | tail -1
 
+# CI only builds; zip it from build/.
+[ -n "${CI:-}" ] && { echo "==> built $APP"; exit 0; }
+
 echo "==> installing to ~/Applications/Unscrew.app"
 mkdir -p "$HOME/Applications"
 rm -rf "$HOME/Applications/Unscrew.app"
 cp -R "$APP" "$HOME/Applications/Unscrew.app"
-
-FEATURES_DIR="$HOME/Library/Application Support/Unscrew/features"
-mkdir -p "$FEATURES_DIR"
-for script in features/*; do
-	[ -f "$script" ] || continue
-	name="$(basename "$script")"
-	if [ ! -e "$FEATURES_DIR/$name" ]; then
-		echo "==> adding feature $name"
-		cp -n "$script" "$FEATURES_DIR/"
-		chmod +x "$FEATURES_DIR/$name"
-	fi
-done
-
-echo "==> built, installed, features in $FEATURES_DIR"
+echo "==> installed ~/Applications/Unscrew.app"
